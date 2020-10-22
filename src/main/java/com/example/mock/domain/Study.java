@@ -33,23 +33,9 @@ public class Study {
         this.limitCount = limit;
     }
 
-    public Study() {
-
-    }
-
     public void publish() {
         this.openedDateTime = LocalDateTime.now();
         this.status = StudyStatus.OPENED;
     }
 
-    public void setOwner(Member orElseThrow) {
-    }
-
-    public StudyStatus getStatus() {
-        return status;
-    }
-
-    public Object getOpenedDateTime() {
-        return openedDateTime;
-    }
 }

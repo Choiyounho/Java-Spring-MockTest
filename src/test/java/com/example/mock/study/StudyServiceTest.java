@@ -1,9 +1,12 @@
 package com.example.mock.study;
 
 import com.example.mock.domain.Member;
+import com.example.mock.domain.Study;
 import com.example.mock.member.MemberService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -11,14 +14,16 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class StudyServiceTest {
 
+    @Mock MemberService memberService;
+    @Mock StudyRepository studyRepository;
+
     @Test
-    void createStudyService(@Mock MemberService memberService,
-                            @Mock StudyRepository studyRepository) {
+    void createStudyService() {
         StudyService studyService = new StudyService(memberService, studyRepository);
         assertNotNull(studyService);
 
@@ -27,21 +32,19 @@ class StudyServiceTest {
         member.setId(1L);
         member.setEmail("maxosa@email.com");
 
-        when(memberService.findById(any())).thenReturn(Optional.of(member));
+        Study study = new Study(10, "테스트");
 
-        when(memberService.findById(any()))
-                .thenReturn(Optional.of(member))
-                .thenThrow(new RuntimeException())
-                .thenReturn(Optional.empty());
+        when(memberService.findById(1L))
+                .thenReturn(Optional.of(member));
+        when(studyRepository.save(study)).thenReturn(study);
 
-        Optional<Member> byId = memberService.findById(1L);
-        assertEquals("maxosa@email.com", byId.get().getEmail());
 
-        assertThrows(RuntimeException.class, () -> {
-            memberService.findById(2L);
-        });
+        studyService.createNewStudy(1L, study);
 
-        assertEquals(Optional.empty(), memberService.findById(3L));
+        assertEquals(member, study.getOwner());
+
+        verify(memberService, times(1)).notify(study);
+        verifyNoMoreInteractions(memberService);
     }
 
 }
